@@ -1,0 +1,27 @@
+name: PostHog replay poll
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: posthog-replay-poll
+  cancel-in-progress: true
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Poll filtered PostHog replays
+        env:
+          POLL_SECRET: ${{ secrets.POSTHOG_POLL_SECRET }}
+          POLL_URL: https://discord-tracker-rho.vercel.app/posthog/poll
+        run: |
+          curl --fail --show-error --silent \
+            --retry 2 \
+            --header "Authorization: Bearer ${POLL_SECRET}" \
+            "${POLL_URL}"
